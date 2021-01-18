@@ -1,0 +1,177 @@
+Course works
+
+Bura kurs ishlerinizin hal-hazirdaki veziyyetini gonderin (.txt ve ya .cpp)
+
+
+
+
+#include <iostream> //cin ve cout uçundur.
+#include <stdio.h>		//printf funksiyasi ucun
+#include <stdlib.h>   //exit funksiyasi ucundur
+#include <math.h>		// riyaziyyat funksiyalarının ekseriyyəti standart kitabxanadaki math.h başliq senedindedir .
+
+using namespace std;
+
+double find_numbers(char*, unsigned*); //reqemleri simvolda ayird elemek ucun 
+double expression(char*, unsigned*); // toplama ve cixma emeliyatlarini yerine yetirmek ucun
+double term(char*, unsigned*);   // vurma ve bolme 
+double factor(char*, unsigned*);     //quvvete yukseltme ve moterizeleri tapmag
+
+int main()
+{
+	cout << "     ____ _____ _____ ____     ___ _____     ___      _      _       ___   _   _   _          _    _____   _____   _____              " << endl;
+	cout << "    / ___|_   _| ____|  _ \\   |_ _|_   _|   /  _)    / \\    | |     /  _) | | | | | |        / \\  |_   _|  | _  | |  _  \\             " << endl;
+	cout << "    \\___ \\ | | |  _| | |_) |   | |  | |    / /      / - \\   | |    / /    | | | | | |       / - \\   | |    || | | | | |_ )             " << endl;
+	cout << "     ___) || | | |___|  __/    | |  | |    \\\ \\_    / ___ \\  | |___ \\\ \\_   | |_| | | |___   / ___ \\  | |    ||_| | |  _  \\               " << endl;
+	cout << "    |____/ |_| |_____|_|      |___| |_|     \\\___) /_/   \\_\\ |_____) \\\___) |_____| |_____) /_/   \\_\\ |_|    |____| |_| |__\\               " << endl;
+
+	cout << "\n\n\n\n\n\n\n";
+
+	unsigned i = 0;          //hal hazirki oxunan simvolunu bildirmek ucun istifade olunan index deyisheni
+	char str[1000];        // 1000 simvoldan ibaret char massivi
+	cout << "Please enter without space\n";
+	cout << "Enter expression:";
+	cin.getline(str, 1000);  //istifadecini daxil elediyi setri oldugu kimi str arrayine yerleshdirir.
+	cout << "Result:" << expression(str, &i);
+	return 0;
+}
+double find_numbers(char* str, unsigned* idx)
+{
+	double data = 0.0;   
+	double div = 10.0;
+	int sign = 1;    //menfi ve ya musbet oldugunu askar edir
+
+	if (str[*idx] == '-')// operator yoxlanilir
+	{
+		sign = -1;
+		++* idx;
+	}
+
+	while (str[*idx] >= '0' && str[*idx] <= '9')//char-i int-e chevirmek ASCII cedveline uygun olaraq 
+	{
+		data = data * 10.0 + (str[*idx] - '0');
+
+		++* idx;
+	}
+
+	if (str[*idx] == '.')//bir nöqte varsa double-a(kesrli edede) chevirmek
+	{
+		++* idx;
+
+		while (str[*idx] >= '0' && str[*idx] <= '9')      // simvolun reqeme olub olmadigini yoxlayir 
+		{
+			data = data + (str[*idx] - '0') / div;       
+														//kesr tipli ededi data deyishenine yazir eger varsa
+			div *= 10.0;								
+
+			++* idx;                                 // o biri simvola kecir
+		}
+	}
+
+	return sign * data;  // diger funksiyaya qayidir
+}
+
+double expression(char* str, unsigned* idx)
+{
+	double data = term(str, idx);
+
+	while (str[*idx] == '+' || str[*idx] == '-')//operator göstericisinin kechdiyi dongeni bashladir ve her shey melumatlara keçir
+	{
+		switch (str[*idx])
+		{
+		case '+':
+			++ * idx;
+
+			data += term(str, idx);
+
+			break;
+		case '-':
+			++ * idx;
+
+			data -= term(str, idx);
+
+			break;
+		}
+	}
+
+	return data;
+}
+
+double term(char* str, unsigned* idx)
+{
+	double data = factor(str, idx);
+	double div;
+
+	while (str[*idx] == '*' || str[*idx] == '/')//vurma ve yaxud bolme oldugunu yoxlayir
+	{
+		switch (str[*idx])
+		{
+		case '*':
+			++ * idx;
+
+			data *= factor(str, idx);
+
+			break;
+		case '/':
+			++ * idx;
+
+			div = factor(str, idx);
+
+			if (div != 0.0)
+			{
+				data /= div;
+			}
+			else
+			{
+				printf("Division by zero!\n");//İdarəetmə sətri həm adi simvolları,  
+											//həm də (%) işarəsi ilə başlayan format cap etmek ucun istifade olunur.
+											//Printf () funksiyası, fayl axını üçün "" ishareleri arasındakı  simvolları yazır.
+				exit(-1); //proqrami sonlandirir
+						//Bu, koddakı kichik bir problem neticesinde bir proqramın anormal shekilde dayandırılmasını gosterir.
+			}
+
+			break;
+		}
+	}
+
+	return data;
+}
+
+double factor(char* str, unsigned* idx)
+{
+	double data;
+	int sign = 1;
+
+	if (str[*idx] == '-')// operator yoxlanılır
+	{
+		sign = -1;
+
+		++* idx; //novbetiye kecir
+	}
+
+	if (str[*idx] == '(')// moterizeni yoxlanılır
+	{
+		++* idx;
+
+		data = expression(str, idx);
+
+		if (str[*idx] != ')')//bu möterizenin baglı olub olmadıgını yoxlayır
+		{
+			cout << "Brackets unbalanced!\n";
+			exit(-2);// Exit (1) benzeyir, lakin sehv boyuk olduqda gosterilir. Bu achiqlama nadir hallarda gorulur.
+		}
+
+		++* idx;//novbetiye kecir
+	}
+	else//moterize yoxdursa
+		data = find_numbers(str, idx);
+
+	if (str[*idx] == '^')// bu isharenin olub olmadigini yoxlayir, beli, onda hazır funksiyani istifade edir ve quvvete yukseldir
+	{
+		++* idx;
+
+		data = pow(data, factor(str, idx));     //pow - quvvete yukseltmek ucun
+	}
+
+	return sign * data;
+}
